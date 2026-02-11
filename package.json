@@ -1,0 +1,47 @@
+{
+  "name": "cineprompt-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "@anthropic-ai/sdk": "^0.27.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+```
+
+Si le falta la parte de `"engines"`, agrégala editando el archivo.
+
+---
+
+### Paso 6: Forzar redeploy en Railway
+
+1. Ve a Railway
+2. Tu servicio → pestaña **"Deployments"**
+3. Click en los 3 puntos `...` del deployment más reciente
+4. Click **"Redeploy"**
+5. O simplemente espera - Railway detectará los cambios automáticamente
+
+---
+
+## 📋 Resumen de archivos que debes tener ahora
+
+En tu repositorio GitHub:
+```
+cineprompt-pro/
+  ├─ cineprompt-final.html
+  ├─ server.js
+  ├─ package.json
+  ├─ .gitignore
+  ├─ Procfile
+  ├─ railway.toml ← NUEVO
+  ├─ nixpacks.json ← NUEVO
+  └─ README.md
