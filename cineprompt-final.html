@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinePrompt Pro - Sistema de Producción Cinematográfica</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --elevated: #1a1a1a;
+            --border: #2a2a2a;
+            --text: #e8e8e8;
+            --text-dim: #808080;
+            --accent: #00a8ff;
+            --success: #00d084;
+            --warning: #ff6b00;
+            --error: #ff3b3b;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* Header */
+        .header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-dim);
+        }
+
+        .usage-counter {
+            padding: 0.5rem 1rem;
+            background: var(--elevated);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Model Selector */
+        .model-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .model-btn {
+            padding: 1rem;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .model-btn:hover {
+            border-color: var(--accent);
+            background: var(--elevated);
+        }
+
+        .model-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .model-name {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .model-tag {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        /* Main Editor */
+        .editor-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .prompt-input {
+            width: 100%;
+            min-height: 160px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+            padding: 1.25rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
+        }
+
+        /* Technical Grid */
+        .technical-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        select, input[type="text"], input[type="number"] {
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            color: var(--text);
+            font-size: 0.875rem;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        select option {
+            background: var(--elevated);
+        }
+
+        /* Image Reference */
+        .image-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .image-upload {
+            border: 2px dashed var(--border);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg);
+        }
+
+        .image-upload:hover {
+            border-color: var(--accent);
+            background: var(--elevated);
+        }
+
+        .image-preview {
+            margin-top: 1rem;
+            position: relative;
+            display: none;
+        }
+
+        .image-preview.active {
+            display: block;
+        }
+
+        .image-preview img {
+            max-width: 100%;
+            max-height: 400px;
+            border: 1px solid var(--border);
+        }
+
+        .remove-img {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .remove-img:hover {
+            background: var(--error);
+            border-color: var(--error);
+        }
+
+        /* Actions */
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .action-left {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #0095e6;
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text);
+        }
+
+        /* Output */
+        .output-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .output-section.active {
+            display: block;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .output-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .output-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .output-content {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            padding: 1.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .feedback-bar {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .feedback-label {
+            font-size: 0.875rem;
+            color: var(--text-dim);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: #000;
+            padding: 0.75rem 1.5rem;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-dim);
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Dataset */
+        .dataset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .dataset-panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .panel-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .add-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .add-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .asset-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .asset-item {
+            padding: 0.875rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .asset-item:hover {
+            border-color: var(--accent);
+            background: var(--elevated);
+        }
+
+        .asset-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .asset-desc {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        /* Autocomplete */
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border: 2px solid var(--accent);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .autocomplete-dropdown.active {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background: var(--elevated);
+        }
+
+        .autocomplete-name {
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+        }
+
+        .autocomplete-preview {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        /* Templates */
+        .template-bar {
+            background: var(--elevated);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .template-select {
+            flex: 1;
+            margin-right: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .model-selector {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .technical-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .dataset-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">CinePrompt Pro</div>
+        <div class="header-right">
+            <div class="usage-counter" id="usageCounter">0/100 hoy</div>
+            <span id="userName">Usuario</span>
+            <span>|</span>
+            <span id="projectName">Proyecto</span>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Templates -->
+        <div class="template-bar">
+            <select class="template-select" id="templateSelect" onchange="loadTemplate()">
+                <option value="">Seleccionar template...</option>
+            </select>
+            <button class="btn btn-secondary" onclick="saveTemplate()">Guardar como Template</button>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="model-selector">
+            <button class="model-btn active" data-model="kling" onclick="selectModel('kling')">
+                <div class="model-name">Kling AI</div>
+                <div class="model-tag">Video generativo</div>
+            </button>
+            <button class="model-btn" data-model="dream-machine" onclick="selectModel('dream-machine')">
+                <div class="model-name">Dream Machine</div>
+                <div class="model-tag">Luma AI</div>
+            </button>
+            <button class="model-btn" data-model="veo" onclick="selectModel('veo')">
+                <div class="model-name">Google Veo</div>
+                <div class="model-tag">High quality</div>
+            </button>
+            <button class="model-btn" data-model="wan" onclick="selectModel('wan')">
+                <div class="model-name">Wan</div>
+                <div class="model-tag">Experimental</div>
+            </button>
+            <button class="model-btn" data-model="runway" onclick="selectModel('runway')">
+                <div class="model-name">Runway Gen-3</div>
+                <div class="model-tag">Industry standard</div>
+            </button>
+        </div>
+
+        <!-- Main Editor -->
+        <div class="editor-section">
+            <div class="section-title">Descripción de Escena</div>
+            <div style="position: relative;">
+                <textarea 
+                    id="promptInput" 
+                    class="prompt-input" 
+                    placeholder="Describe tu escena. Usa @ para referencias del dataset.
+
+Ejemplo:
+Wide shot de @detective caminando hacia la cámara en @ciudad-nocturna bajo lluvia intensa"
+                    oninput="updateCharCount()"
+                ></textarea>
+                <div class="char-counter" id="charCounter">0 caracteres</div>
+                <div class="autocomplete-dropdown" id="autocomplete"></div>
+            </div>
+
+            <!-- Technical Controls -->
+            <div class="technical-grid">
+                <div class="control-group">
+                    <label class="control-label">Tipo de Plano</label>
+                    <select id="shotType">
+                        <option value="">Automático</option>
+                        <option value="extreme-wide">Extreme Wide Shot (EWS)</option>
+                        <option value="wide">Wide Shot (WS)</option>
+                        <option value="full">Full Shot (FS)</option>
+                        <option value="medium">Medium Shot (MS)</option>
+                        <option value="medium-closeup">Medium Close-Up (MCU)</option>
+                        <option value="closeup">Close-Up (CU)</option>
+                        <option value="extreme-closeup">Extreme Close-Up (ECU)</option>
+                        <option value="over-shoulder">Over-the-Shoulder (OTS)</option>
+                        <option value="two-shot">Two Shot</option>
+                        <option value="dutch">Dutch Angle</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Movimiento de Cámara</label>
+                    <select id="cameraMove">
+                        <option value="">Automático</option>
+                        <option value="static">Estático</option>
+                        <option value="dolly-in-slow">Dolly In (lento)</option>
+                        <option value="dolly-in-fast">Dolly In (rápido)</option>
+                        <option value="dolly-out-slow">Dolly Out (lento)</option>
+                        <option value="dolly-out-fast">Dolly Out (rápido)</option>
+                        <option value="pan-left">Pan Izquierda</option>
+                        <option value="pan-right">Pan Derecha</option>
+                        <option value="tilt-up">Tilt Arriba</option>
+                        <option value="tilt-down">Tilt Abajo</option>
+                        <option value="tracking">Tracking</option>
+                        <option value="handheld">Handheld</option>
+                        <option value="steadicam">Steadicam</option>
+                        <option value="crane-up">Crane Up</option>
+                        <option value="crane-down">Crane Down</option>
+                        <option value="orbit">Orbit 360°</option>
+                        <option value="zoom-in">Zoom In</option>
+                        <option value="zoom-out">Zoom Out</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Óptica / Lente</label>
+                    <select id="lens">
+                        <option value="">Automático</option>
+                        <option value="14mm">14mm (Ultra Wide)</option>
+                        <option value="24mm">24mm (Wide Angle)</option>
+                        <option value="35mm">35mm (Estándar Cine)</option>
+                        <option value="50mm">50mm (Natural)</option>
+                        <option value="85mm">85mm (Retrato)</option>
+                        <option value="135mm">135mm (Telephoto)</option>
+                        <option value="anamorphic">Anamórfico 2.39:1</option>
+                        <option value="fisheye">Fisheye</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Iluminación</label>
+                    <select id="lighting">
+                        <option value="">Automático</option>
+                        <option value="natural">Natural Light</option>
+                        <option value="golden-hour">Golden Hour</option>
+                        <option value="blue-hour">Blue Hour</option>
+                        <option value="low-key">Low-Key (dramático)</option>
+                        <option value="high-key">High-Key (brillante)</option>
+                        <option value="rembrandt">Rembrandt</option>
+                        <option value="butterfly">Butterfly</option>
+                        <option value="three-point">Three-Point</option>
+                        <option value="split">Split Lighting</option>
+                        <option value="rim">Rim/Back Light</option>
+                        <option value="volumetric">Volumétrica (haces de luz)</option>
+                        <option value="hard">Hard Light</option>
+                        <option value="soft">Soft Diffused</option>
+                        <option value="practical">Practical Lights</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Color Grading</label>
+                    <select id="colorGrade">
+                        <option value="">Automático</option>
+                        <option value="teal-orange">Teal & Orange</option>
+                        <option value="bleach-bypass">Bleach Bypass</option>
+                        <option value="desaturated">Desaturado</option>
+                        <option value="vibrant">Vibrante/Saturado</option>
+                        <option value="warm">Paleta Cálida</option>
+                        <option value="cool">Paleta Fría</option>
+                        <option value="monochrome">Monocromático</option>
+                        <option value="noir">Noir B&W</option>
+                        <option value="vintage">Vintage Film</option>
+                        <option value="cyberpunk">Cyberpunk (neón)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Duración (segundos)</label>
+                    <input type="number" id="duration" placeholder="5" min="1" max="30" step="1">
+                </div>
+            </div>
+
+            <!-- Image Reference -->
+            <div class="image-section">
+                <div class="section-title">Referencia Visual (Opcional)</div>
+                <input type="file" id="imageInput" accept="image/*" style="display: none" onchange="handleImage(event)">
+                <div class="image-upload" onclick="document.getElementById('imageInput').click()">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📸</div>
+                    <div>Click para subir imagen de referencia</div>
+                    <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">
+                        Para análisis de composición, iluminación y color
+                    </div>
+                </div>
+                <div class="image-preview" id="imagePreview">
+                    <img id="previewImg" src="" alt="">
+                    <button class="remove-img" onclick="removeImage()">✕ Remover</button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="action-bar">
+                <div class="action-left">
+                    <button class="btn btn-secondary" onclick="savePromptDraft()">💾 Guardar Borrador</button>
+                    <button class="btn btn-secondary" onclick="clearAll()">🗑️ Limpiar Todo</button>
+                </div>
+                <button class="btn btn-primary" id="generateBtn" onclick="generatePrompt()">
+                    🎬 Generar Prompt Profesional
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Generando prompt cinematográfico optimizado...</div>
+        </div>
+
+        <!-- Output -->
+        <div class="output-section" id="output">
+            <div class="output-header">
+                <div class="output-title">Prompt Generado para <span id="outputModel"></span></div>
+                <div class="output-actions">
+                    <button class="btn btn-secondary" onclick="copyOutput()">📋 Copiar</button>
+                    <button class="btn btn-secondary" onclick="downloadOutput()">💾 Descargar</button>
+                </div>
+            </div>
+            <div class="output-content" id="outputContent"></div>
+            
+            <div class="feedback-bar">
+                <div class="feedback-label">¿Este prompt funcionó bien?</div>
+                <button class="btn btn-success" onclick="markSuccess()">✓ Sí, funcionó</button>
+                <button class="btn btn-warning" onclick="markFailed()">✗ No funcionó</button>
+            </div>
+        </div>
+
+        <!-- Dataset -->
+        <div class="section-title" style="margin-top: 3rem;">Base de Datos del Proyecto</div>
+        <div class="dataset-grid">
+            <div class="dataset-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Personajes</div>
+                    <button class="add-btn" onclick="addAsset('characters')">+ Nuevo</button>
+                </div>
+                <div class="asset-list" id="charactersList"></div>
+            </div>
+
+            <div class="dataset-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Locaciones</div>
+                    <button class="add-btn" onclick="addAsset('locations')">+ Nueva</button>
+                </div>
+                <div class="asset-list" id="locationsList"></div>
+            </div>
+
+            <div class="dataset-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Props & Objetos</div>
+                    <button class="add-btn" onclick="addAsset('props')">+ Nuevo</button>
+                </div>
+                <div class="asset-list" id="propsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api' 
+            : '/api';
+
+        // State
+        let state = {
+            currentModel: 'kling',
+            currentImage: null,
+            currentPromptId: null,
+            userId: localStorage.getItem('userId') || 'user_' + Date.now(),
+            projectId: localStorage.getItem('projectId') || 'project_default',
+            dailyUsage: 0,
+            datasets: {
+                characters: [],
+                locations: [],
+                props: []
+            },
+            templates: []
+        };
+
+        // Save userId
+        localStorage.setItem('userId', state.userId);
+
+        // Model Configurations - REAL SYNTAX (to be researched/verified)
+        const MODEL_CONFIGS = {
+            'kling': {
+                name: 'Kling AI',
+                systemPrompt: `Traduce a sintaxis Kling AI.
+
+ESTRUCTURA KLING:
+[Shot type], [camera movement], [subject], [lens if specified], [lighting], [color], [duration]
+
+IMPORTANTE:
+- Shot types: extreme wide shot, wide shot, full shot, medium shot, close-up, extreme close-up
+- Camera: static, dolly in/out, pan, tilt, tracking, orbit, handheld
+- Lens: especificar si usuario eligió (14mm, 35mm, 85mm, anamorphic)
+- Lighting: natural, golden hour, low-key, volumetric, etc
+- Color: teal and orange, desaturated, vibrant, noir, etc
+- Duration: X seconds
+
+USA exactamente lo que usuario especificó. NO inventes detalles del sujeto.`,
+                notes: 'NOTA: Sintaxis a verificar con documentación oficial de Kling'
+            },
+            
+            'dream-machine': {
+                name: 'Luma Dream Machine',
+                systemPrompt: `Traduce a sintaxis Luma Dream Machine.
+
+ESTRUCTURA DREAM MACHINE:
+[Descriptive scene], [camera movement], [lens style], [lighting], [duration]
+
+IMPORTANTE:
+- Dream Machine prefiere descripciones narrativas pero técnicas
+- Camera movement: smooth, dynamic, static, following, orbiting
+- Lighting: natural, cinematic, dramatic, soft
+- Mantén descripción clara y concisa
+- NO inventes detalles no especificados
+
+USA solo lo que usuario indicó.`,
+                notes: 'NOTA: Verificar sintaxis con ejemplos de comunidad Luma'
+            },
+            
+            'veo': {
+                name: 'Google Veo',
+                systemPrompt: `Traduce a sintaxis Google Veo.
+
+ESTRUCTURA VEO:
+A [shot type] of [subject], [camera movement], [technical details], [lighting], [color treatment], [style]
+
+IMPORTANTE:
+- Veo prefiere formato narrativo técnico
+- Shot types: wide shot, close-up, medium shot, etc
+- Camera: smooth dolly, static, panning, tracking
+- Lens: wide-angle, standard, telephoto, anamorphic
+- Lighting: natural light, golden hour, studio lighting, dramatic
+- Color: cinematic color grading, vibrant, desaturated
+- Duration: X seconds
+
+Traduce LITERALMENTE lo que usuario especificó.`,
+                notes: 'NOTA: Verificar con documentación oficial de Google Veo'
+            },
+            
+            'wan': {
+                name: 'Wan',
+                systemPrompt: `Traduce a sintaxis Wan.
+
+ESTRUCTURA WAN:
+[Shot description], [camera], [subject], [environment], [lighting], [mood]
+
+IMPORTANTE:
+- Wan es experimental, sintaxis puede variar
+- Preferencia por descripciones cinematográficas técnicas
+- Camera movement: slow/fast dolly, pan, static, handheld
+- Lighting: especificar tipo (natural, artificial, dramatic)
+- Mood: optional pero útil
+- NO inventes detalles
+
+USA exactamente parámetros del usuario.`,
+                notes: 'NOTA: Wan es experimental - sintaxis a investigar activamente'
+            },
+            
+            'runway': {
+                name: 'Runway Gen-3',
+                systemPrompt: `Traduce a sintaxis Runway Gen-3.
+
+ESTRUCTURA RUNWAY GEN-3:
+[Shot type] [camera movement] of [subject], [lens], in [environment], [lighting], [color grade], [style]
+
+IMPORTANTE:
+- Shot: ECU, CU, MS, FS, WS, EWS, OTS
+- Camera: static, push in, pull back, pan, tilt, orbit, handheld, steadicam
+- Lens: 14mm, 24mm, 35mm, 50mm, 85mm, 135mm, anamorphic
+- Lighting: natural, golden hour, low-key, high-key, volumetric, practical
+- Color: teal and orange, desaturated, vibrant, noir, vintage
+- Style: cinematic, documentary, vintage film, IMAX
+
+Traduce SOLO lo especificado por usuario.`,
+                notes: 'NOTA: Runway tiene documentación - verificar sintaxis oficial'
+            }
+        };
+
+        // Initialize
+        function init() {
+            loadDatasets();
+            loadTemplates();
+            setupAutocomplete();
+            updateUsageCounter();
+            
+            // Auto-save draft every 30s
+            setInterval(autoSaveDraft, 30000);
+        }
+
+        // Model Selection
+        function selectModel(model) {
+            state.currentModel = model;
+            document.querySelectorAll('.model-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.model-btn').classList.add('active');
+        }
+
+        // Character Counter
+        function updateCharCount() {
+            const text = document.getElementById('promptInput').value;
+            document.getElementById('charCounter').textContent = `${text.length} caracteres`;
+        }
+
+        // Autocomplete
+        function setupAutocomplete() {
+            const input = document.getElementById('promptInput');
+            const dropdown = document.getElementById('autocomplete');
+
+            input.addEventListener('input', () => {
+                const cursor = input.selectionStart;
+                const text = input.value.substring(0, cursor);
+                const atIndex = text.lastIndexOf('@');
+
+                if (atIndex !== -1 && cursor - atIndex <= 30) {
+                    const search = text.substring(atIndex + 1).toLowerCase();
+                    showAutocomplete(search);
+                } else {
+                    dropdown.classList.remove('active');
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && dropdown.classList.contains('active')) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+
+        function showAutocomplete(search) {
+            const dropdown = document.getElementById('autocomplete');
+            const allAssets = [
+                ...state.datasets.characters.map(a => ({...a, type: 'personaje'})),
+                ...state.datasets.locations.map(a => ({...a, type: 'locación'})),
+                ...state.datasets.props.map(a => ({...a, type: 'prop'}))
+            ];
+
+            const filtered = allAssets.filter(a => 
+                a.id.includes(search) || 
+                a.name.toLowerCase().includes(search)
+            );
+
+            if (filtered.length === 0) {
+                dropdown.classList.remove('active');
+                return;
+            }
+
+            dropdown.innerHTML = filtered.map(asset => `
+                <div class="autocomplete-item" onclick="insertAsset('${asset.id}')">
+                    <div class="autocomplete-name">@${asset.id}</div>
+                    <div class="autocomplete-preview">${asset.name} (${asset.type})</div>
+                </div>
+            `).join('');
+
+            dropdown.classList.add('active');
+        }
+
+        function insertAsset(id) {
+            const input = document.getElementById('promptInput');
+            const text = input.value;
+            const cursor = input.selectionStart;
+            const before = text.substring(0, cursor);
+            const after = text.substring(cursor);
+            const atIndex = before.lastIndexOf('@');
+            
+            input.value = before.substring(0, atIndex) + `@${id} ` + after;
+            input.focus();
+            
+            const newPos = atIndex + id.length + 2;
+            input.setSelectionRange(newPos, newPos);
+            
+            document.getElementById('autocomplete').classList.remove('active');
+            updateCharCount();
+        }
+
+        // Generate Prompt
+        async function generatePrompt() {
+            const description = document.getElementById('promptInput').value.trim();
+            
+            if (!description) {
+                alert('Por favor escribe una descripción de escena');
+                return;
+            }
+
+            // Check daily limit
+            if (state.dailyUsage >= 100) {
+                alert('Has alcanzado el límite diario de 100 prompts. Intenta mañana.');
+                return;
+            }
+
+            // Collect parameters
+            const params = {
+                model: state.currentModel,
+                description: await expandReferences(description),
+                shotType: document.getElementById('shotType').value,
+                cameraMove: document.getElementById('cameraMove').value,
+                lens: document.getElementById('lens').value,
+                lighting: document.getElementById('lighting').value,
+                colorGrade: document.getElementById('colorGrade').value,
+                duration: document.getElementById('duration').value,
+                image: state.currentImage
+            };
+
+            // Build technical string
+            let techDetails = '';
+            if (params.shotType) techDetails += `${params.shotType}, `;
+            if (params.cameraMove) techDetails += `${params.cameraMove}, `;
+            if (params.lens) techDetails += `${params.lens} lens, `;
+            if (params.lighting) techDetails += `${params.lighting} lighting, `;
+            if (params.colorGrade) techDetails += `${params.colorGrade} color grading, `;
+            if (params.duration) techDetails += `${params.duration} seconds`;
+
+            document.getElementById('generateBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('output').classList.remove('active');
+
+            try {
+                // Build message for Claude
+                const messageContent = [];
+                
+                if (params.image) {
+                    messageContent.push({
+                        type: 'image',
+                        source: {
+                            type: 'base64',
+                            media_type: 'image/jpeg',
+                            data: params.image.split(',')[1]
+                        }
+                    });
+                    messageContent.push({
+                        type: 'text',
+                        text: 'Analiza composición, iluminación y paleta de color de esta imagen de referencia.'
+                    });
+                }
+
+                const config = MODEL_CONFIGS[state.currentModel];
+                
+                messageContent.push({
+                    type: 'text',
+                    text: `${config.systemPrompt}
+
+DESCRIPCIÓN DEL USUARIO:
+${params.description}
+
+PARÁMETROS TÉCNICOS ESPECIFICADOS:
+${techDetails || 'Ninguno - usar valores por defecto apropiados'}
+
+INSTRUCCIONES CRÍTICAS:
+1. USA EXACTAMENTE los parámetros técnicos que el usuario especificó
+2. NO inventes detalles del sujeto que no estén en la descripción
+3. Si falta algún parámetro técnico, usa valores apropiados por defecto
+4. Traduce a la sintaxis correcta de ${config.name}
+5. Responde SOLO con el prompt final, sin explicaciones
+
+${params.image ? 'Usa la referencia visual solo para informar composición, luz y color.' : ''}
+
+Prompt final para ${config.name}:`
+                });
+
+                // Call backend API
+                const response = await fetch(`${API_URL}/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: state.userId,
+                        projectId: state.projectId,
+                        messageContent: messageContent,
+                        ...params
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error en la generación');
+                }
+
+                const result = await response.json();
+                
+                document.getElementById('outputContent').textContent = result.prompt;
+                document.getElementById('outputModel').textContent = config.name;
+                document.getElementById('output').classList.add('active');
+                
+                state.currentPromptId = result.promptId;
+                state.dailyUsage++;
+                updateUsageCounter();
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al generar prompt. Verifica la conexión.');
+            } finally {
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        async function expandReferences(text) {
+            const refs = text.match(/@[\w-]+/g) || [];
+            let expanded = text;
+
+            const allAssets = [
+                ...state.datasets.characters,
+                ...state.datasets.locations,
+                ...state.datasets.props
+            ];
+
+            for (const ref of refs) {
+                const id = ref.substring(1);
+                const asset = allAssets.find(a => a.id === id);
+                
+                if (asset) {
+                    expanded = expanded.replace(ref, `${asset.name} (${asset.details})`);
+                }
+            }
+
+            return expanded;
+        }
+
+        // Feedback
+        async function markSuccess() {
+            if (!state.currentPromptId) return;
+            
+            try {
+                await fetch(`${API_URL}/feedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        promptId: state.currentPromptId,
+                        success: true,
+                        userId: state.userId
+                    })
+                });
+                
+                alert('✓ Marcado como exitoso - El sistema aprenderá de este patrón');
+            } catch (e) {
+                console.error('Feedback error:', e);
+            }
+        }
+
+        async function markFailed() {
+            if (!state.currentPromptId) return;
+            
+            const feedback = prompt('¿Qué necesitas cambiar para que funcione?\n\nEsto ayuda al sistema a aprender:');
+            if (!feedback) return;
+
+            try {
+                await fetch(`${API_URL}/feedback`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        promptId: state.currentPromptId,
+                        success: false,
+                        feedback: feedback,
+                        userId: state.userId
+                    })
+                });
+                
+                alert('✓ Feedback guardado - El sistema evitará este error en el futuro');
+            } catch (e) {
+                console.error('Feedback error:', e);
+            }
+        }
+
+        // Output Actions
+        function copyOutput() {
+            const text = document.getElementById('outputContent').textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✓ Prompt copiado al portapapeles');
+            });
+        }
+
+        function downloadOutput() {
+            const text = document.getElementById('outputContent').textContent;
+            const config = MODEL_CONFIGS[state.currentModel];
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `prompt-${config.name}-${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Image Handling
+        function handleImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                alert('Por favor sube una imagen válida');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                state.currentImage = e.target.result;
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('imagePreview').classList.add('active');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            state.currentImage = null;
+            document.getElementById('imagePreview').classList.remove('active');
+            document.getElementById('imageInput').value = '';
+        }
+
+        // Datasets
+        async function loadDatasets() {
+            try {
+                const response = await fetch(`${API_URL}/projects/${state.projectId}/datasets`);
+                if (response.ok) {
+                    const data = await response.json();
+                    state.datasets = data.datasets;
+                }
+            } catch (e) {
+                // Fallback to localStorage
+                const saved = localStorage.getItem('datasets_' + state.projectId);
+                if (saved) {
+                    state.datasets = JSON.parse(saved);
+                }
+            }
+            
+            renderDatasets();
+        }
+
+        function renderDatasets() {
+            ['characters', 'locations', 'props'].forEach(type => {
+                const container = document.getElementById(`${type}List`);
+                container.innerHTML = state.datasets[type].map(asset => `
+                    <div class="asset-item" onclick="insertAsset('${asset.id}')">
+                        <div class="asset-name">${asset.name}</div>
+                        <div class="asset-desc">${asset.description}</div>
+                    </div>
+                `).join('');
+            });
+        }
+
+        async function addAsset(type) {
+            const name = prompt('Nombre:');
+            if (!name) return;
+
+            const description = prompt('Descripción breve:');
+            const details = prompt('Detalles completos (lo que se usará en el prompt):');
+
+            const asset = {
+                id: name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+                name: name,
+                description: description || '',
+                details: details || description || name
+            };
+
+            state.datasets[type].push(asset);
+            
+            try {
+                await fetch(`${API_URL}/projects/${state.projectId}/datasets`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ datasets: state.datasets })
+                });
+            } catch (e) {
+                localStorage.setItem('datasets_' + state.projectId, JSON.stringify(state.datasets));
+            }
+            
+            renderDatasets();
+        }
+
+        // Templates
+        async function loadTemplates() {
+            try {
+                const response = await fetch(`${API_URL}/projects/${state.projectId}/templates`);
+                if (response.ok) {
+                    const data = await response.json();
+                    state.templates = data.templates;
+                    renderTemplates();
+                }
+            } catch (e) {
+                const saved = localStorage.getItem('templates_' + state.projectId);
+                if (saved) {
+                    state.templates = JSON.parse(saved);
+                    renderTemplates();
+                }
+            }
+        }
+
+        function renderTemplates() {
+            const select = document.getElementById('templateSelect');
+            select.innerHTML = '<option value="">Seleccionar template...</option>' +
+                state.templates.map((t, i) => `<option value="${i}">${t.name}</option>`).join('');
+        }
+
+        function loadTemplate() {
+            const index = document.getElementById('templateSelect').value;
+            if (index === '') return;
+            
+            const template = state.templates[index];
+            document.getElementById('promptInput').value = template.description;
+            document.getElementById('shotType').value = template.params.shotType || '';
+            document.getElementById('cameraMove').value = template.params.cameraMove || '';
+            document.getElementById('lens').value = template.params.lens || '';
+            document.getElementById('lighting').value = template.params.lighting || '';
+            document.getElementById('colorGrade').value = template.params.colorGrade || '';
+            document.getElementById('duration').value = template.params.duration || '';
+            selectModel(template.model);
+            updateCharCount();
+        }
+
+        async function saveTemplate() {
+            const name = prompt('Nombre del template:');
+            if (!name) return;
+
+            const template = {
+                name: name,
+                model: state.currentModel,
+                description: document.getElementById('promptInput').value,
+                params: {
+                    shotType: document.getElementById('shotType').value,
+                    cameraMove: document.getElementById('cameraMove').value,
+                    lens: document.getElementById('lens').value,
+                    lighting: document.getElementById('lighting').value,
+                    colorGrade: document.getElementById('colorGrade').value,
+                    duration: document.getElementById('duration').value
+                }
+            };
+
+            state.templates.push(template);
+            
+            try {
+                await fetch(`${API_URL}/projects/${state.projectId}/templates`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ template: template })
+                });
+            } catch (e) {
+                localStorage.setItem('templates_' + state.projectId, JSON.stringify(state.templates));
+            }
+            
+            renderTemplates();
+            alert('✓ Template guardado');
+        }
+
+        // Utilities
+        function updateUsageCounter() {
+            document.getElementById('usageCounter').textContent = `${state.dailyUsage}/100 hoy`;
+        }
+
+        function savePromptDraft() {
+            const draft = {
+                description: document.getElementById('promptInput').value,
+                model: state.currentModel,
+                params: {
+                    shotType: document.getElementById('shotType').value,
+                    cameraMove: document.getElementById('cameraMove').value,
+                    lens: document.getElementById('lens').value,
+                    lighting: document.getElementById('lighting').value,
+                    colorGrade: document.getElementById('colorGrade').value,
+                    duration: document.getElementById('duration').value
+                },
+                image: state.currentImage,
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('draft_' + state.projectId, JSON.stringify(draft));
+            alert('✓ Borrador guardado');
+        }
+
+        function autoSaveDraft() {
+            const description = document.getElementById('promptInput').value;
+            if (description.length > 10) {
+                savePromptDraft();
+            }
+        }
+
+        function clearAll() {
+            if (!confirm('¿Limpiar todo el contenido actual?')) return;
+            
+            document.getElementById('promptInput').value = '';
+            document.querySelectorAll('select').forEach(s => s.value = '');
+            document.getElementById('duration').value = '';
+            removeImage();
+            updateCharCount();
+        }
+
+        // Load draft on startup
+        window.addEventListener('load', () => {
+            const draft = localStorage.getItem('draft_' + state.projectId);
+            if (draft) {
+                const data = JSON.parse(draft);
+                if (confirm('Hay un borrador guardado. ¿Deseas cargarlo?')) {
+                    document.getElementById('promptInput').value = data.description;
+                    selectModel(data.model);
+                    Object.keys(data.params).forEach(key => {
+                        const el = document.getElementById(key);
+                        if (el) el.value = data.params[key];
+                    });
+                    if (data.image) {
+                        state.currentImage = data.image;
+                        document.getElementById('previewImg').src = data.image;
+                        document.getElementById('imagePreview').classList.add('active');
+                    }
+                    updateCharCount();
+                }
+            }
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>
